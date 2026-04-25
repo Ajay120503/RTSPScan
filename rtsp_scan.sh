@@ -304,18 +304,19 @@ run_scan() {
   echo
 
   while kill -0 "$NMAP_PID" 2>/dev/null; do
-    found=$(grep -c "open" "$TEMP_RAW" 2>/dev/null || echo 0)
-    scanned=$(grep -cE "^Host:" "$TEMP_RAW" 2>/dev/null || echo 0)
+    found=$(grep -c "open" "$TEMP_RAW" 2>/dev/null); found=${found//[^0-9]/}; found=${found:-0}
+    scanned=$(grep -cE "^Host:" "$TEMP_RAW" 2>/dev/null); scanned=${scanned//[^0-9]/}; scanned=${scanned:-0}
     elapsed=$(( $(date +%s) - SCAN_START ))
 
     local spin="${frames[$fi]}"
     fi=$(( (fi + 1) % ${#frames[@]} ))
 
-    # Animated bar (cycles)
-    local bar="" idx
+    # Animated bar (cycles based on scanned count)
+    local bar="" idx mod
+    mod=$(( scanned % 30 ))
     for ((idx=0; idx<30; idx++)); do
-      if (( idx == (scanned % 30) )); then bar+="█"
-      elif (( idx < (scanned % 30) )); then bar+="▓"
+      if [[ $idx -eq $mod ]];   then bar+="█"
+      elif [[ $idx -lt $mod ]]; then bar+="▓"
       else bar+="░"
       fi
     done
